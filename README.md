@@ -4,7 +4,7 @@ This repository is by [Brandon Amos](http://bamos.github.io)
 and [J. Zico Kolter](http://zicokolter.com)
 and contains the [PyTorch](https://pytorch.org) source code to
 reproduce the experiments in our paper
-[OptNet: Differentiable Optimization as a Layer in Neural Networks](todo).
+[OptNet: Differentiable Optimization as a Layer in Neural Networks](https://arxiv.org/abs/1703.00443).
 
 If you find this repository helpful in your publications,
 please consider citing our paper.
@@ -13,7 +13,7 @@ please consider citing our paper.
 @article{amos2017optnet,
   title={OptNet: Differentiable Optimization as a Layer in Neural Networks},
   author={Brandon Amos and J. Zico Kolter},
-  journal={arXiv preprint arXiv:TODO},
+  journal={arXiv preprint arXiv:1703.00443},
   year={2017}
 }
 ```
