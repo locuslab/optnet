@@ -63,8 +63,9 @@ for signal denoising and sudoku.
 
 # Denoising Experiments
 
-+ The `arxiv.v1.denoising` dataset used in our experiments is
-  available [here](TODO). This dataset may change in future
++ The `arxiv.v1.denoising` dataset used in our experiments is available
+  [here](http://joule.isr.cs.cmu.edu:11235/optnet/arxiv.v1.denoising.tgz).
+  This dataset may change in future
   versions of our paper and we will add updated info here.
 
 ```
@@ -78,8 +79,9 @@ denoising
 
 # Sudoku Experiments
 
-+ The `arxiv.v1.sudoku` dataset used in our experiments is
-  available [here](TODO). This dataset may change in future
++ The `arxiv.v1.sudoku` dataset used in our experiments is available
+  [here](http://joule.isr.cs.cmu.edu:11235/optnet/arxiv.v1.sudoku.tgz).
+  This dataset may change in future
   versions of our paper and we will add updated info here.
 
 ```
