@@ -6,7 +6,9 @@ import os
 import shutil
 from tqdm import tqdm
 
-import setGPU
+try: import setGPU
+except ImportError: pass
+
 import torch
 import torch.nn as nn
 import torch.optim as optim

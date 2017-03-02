@@ -4,7 +4,9 @@ import json
 
 import argparse
 
-import setGPU
+try: import setGPU
+except ImportError: pass
+
 import torch
 
 import torch.nn as nn
