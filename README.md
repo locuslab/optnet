@@ -60,6 +60,8 @@ for signal denoising and sudoku.
   *Our fast QP solver for PyTorch released in conjunction with this paper.*
 + [bamos/block](https://github.com/bamos/block):
   *Our intelligent block matrix library for numpy, PyTorch, and beyond.*
++ Optional: [bamos/setGPU](https://github.com/bamos/setGPU):
+  A small library to set `CUDA_VISIBLE_DEVICES` on multi-GPU systems.
 
 # Denoising Experiments
 
