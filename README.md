@@ -18,6 +18,35 @@ please consider citing our paper.
 }
 ```
 
+# Informal Introduction
+
+[Mathematical optimization](https://en.wikipedia.org/wiki/Mathematical_optimization)
+is a well-studied language of expressing solutions to many real-life problems
+that come up in machine learning and many other fields such as mechanics,
+economics, EE, operations research, control engineering, geophysics,
+and molecular modeling.
+As we build our machine learning systems to interact with real
+data from these fields, we often **cannot** (but sometimes can)
+simply ``learn away'' the optimization sub-problems by adding more
+layers in our network. Well-defined optimization problems may be added
+if you have a thorough understanding of your feature space, but
+oftentimes we **don't** have this understanding and resort to
+automatic feature learning for our tasks.
+
+Until this repository, **no** modern deep learning library has provided
+a way of adding a learnable optimization layer (other than simply unrolling
+an optimization procedure, which is inefficient and inexact) into
+our model formulation that we can quickly try to see if it's a nice way
+of expressing our data.
+
+See our paper
+[OptNet: Differentiable Optimization as a Layer in Neural Networks](todo)
+and code at
+[locuslab/optnet](https://github.com/locuslab/optnet)
+if you are interested in learning more about our initial exploration
+in this space of automatically learning quadratic program layers
+for signal denoising and sudoku.
+
 ## Setup and Dependencies
 
 + Python/numpy
@@ -28,7 +57,9 @@ please consider citing our paper.
     We are currently working with the PyTorch team to get these new features
     merged into Torch proper.
 + [qpth](https://github.com/locuslab/qpth):
-  Our fast QP solver for PyTorch released in conjunction with this paper.
+  *Our fast QP solver for PyTorch released in conjunction with this paper.*
++ [bamos/block](https://github.com/bamos/block):
+  *Our intelligent block matrix library for numpy, PyTorch, and beyond.*
 
 # Denoising Experiments
 
