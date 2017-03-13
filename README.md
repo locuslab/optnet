@@ -103,7 +103,7 @@ cls
 └── models.py - Models used for classification.
 ```
 
-### Acknowledgments
+# Acknowledgments
 
 The rapid development of this work would not have been possible without
 the immense amount of help from the [PyTorch](https://pytorch.org) team,
