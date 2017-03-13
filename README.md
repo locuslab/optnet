@@ -40,7 +40,7 @@ our model formulation that we can quickly try to see if it's a nice way
 of expressing our data.
 
 See our paper
-[OptNet: Differentiable Optimization as a Layer in Neural Networks](todo)
+[OptNet: Differentiable Optimization as a Layer in Neural Networks](https://arxiv.org/abs/1703.00443)
 and code at
 [locuslab/optnet](https://github.com/locuslab/optnet)
 if you are interested in learning more about our initial exploration
