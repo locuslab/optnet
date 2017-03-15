@@ -75,16 +75,17 @@ def get_sudoku_matrix(n):
 
 
 class OptNet(nn.Module):
-    """ Solve a single SQP iteration of the scheduling problem"""
-    def __init__(self, n, Qpenalty):
+    def __init__(self, n, Qpenalty, trueInit=False):
         super().__init__()
         nx = (n**2)**3
         self.Q = Variable(Qpenalty*torch.eye(nx).double().cuda())
         self.G = Variable(-torch.eye(nx).double().cuda())
         self.h = Variable(torch.zeros(nx).double().cuda())
-        # self.A = Parameter(torch.DoubleTensor(get_sudoku_matrix(n)).cuda())
         t = get_sudoku_matrix(n)
-        self.A = Parameter(torch.rand(t.shape).double().cuda())
+        if trueInit:
+            self.A = Parameter(torch.DoubleTensor(get_sudoku_matrix(n)).cuda())
+        else:
+            self.A = Parameter(torch.rand(t.shape).double().cuda())
         self.b = Variable(torch.ones(self.A.size(0)).double().cuda())
 
     def forward(self, puzzles):

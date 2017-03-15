@@ -103,7 +103,7 @@ def main():
         nHidden = args.nHidden
         model = models.FC(nFeatures, nHidden, args.bn)
     elif args.model == 'optnet':
-        model = models.OptNet(args.boardSz, args.Qpenalty)
+        model = models.OptNet(args.boardSz, args.Qpenalty, trueInit=False)
     else:
         assert(False)
 
