@@ -169,7 +169,7 @@ def train(args, epoch, model, trainF, trainW, trainX, trainY, optimizer):
         loss.backward()
         optimizer.step()
 
-        err = get_nErr(preds.data, batch_targets.data)/batchSz
+        err = computeErr(preds.data)/batchSz
         print('Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.4f} Err: {:.4f}'.format(
             epoch, i+batchSz, trainX.size(0),
             float(i+batchSz)/trainX.size(0)*100,
@@ -197,7 +197,7 @@ def test(args, epoch, model, testF, testW, testX, testY):
         batch_targets.data[:] = testY[i:i+batchSz]
         output = model(batch_data)
         test_loss += nn.MSELoss()(output, batch_targets)
-        nErr += get_nErr(output.data, batch_targets.data)
+        nErr += computeErr(output.data)
 
     nBatches = testX.size(0)/batchSz
     test_loss = test_loss.data[0]/nBatches
@@ -209,11 +209,34 @@ def test(args, epoch, model, testF, testW, testX, testY):
     testW.writerow((epoch, test_loss, test_err))
     testF.flush()
 
-def get_nErr(pred, target):
+def computeErr(pred):
     batchSz = pred.size(0)
-    I_pred = torch.max(pred, 3)[1].squeeze().view(batchSz, -1).float()
-    I_targ = torch.max(target, 3)[1].squeeze().view(batchSz, -1).float()
-    return (torch.norm(I_pred-I_targ, 2, 1) != 0).sum()
+    nsq = int(pred.size(1))
+    n = int(np.sqrt(nsq))
+    s = (nsq-1)*nsq//2 # 0 + 1 + ... + n^2-1
+    I = torch.max(pred, 3)[1].squeeze().view(batchSz, nsq, nsq)
+
+    def invalidGroups(x):
+        valid = (x.min(1)[0] == 0)
+        valid *= (x.max(1)[0] == nsq-1)
+        valid *= (x.sum(1) == s)
+        return 1-valid
+
+    boardCorrect = torch.ones(batchSz).type_as(pred)
+    for j in range(nsq):
+        # Check the jth row and column.
+        boardCorrect[invalidGroups(I[:,j,:])] = 0
+        boardCorrect[invalidGroups(I[:,:,j])] = 0
+
+        # Check the jth block.
+        row, col = n*(j // n), n*(j % n)
+        M = invalidGroups(I[:,row:row+n,col:col+n].contiguous().view(batchSz,-1))
+        boardCorrect[M] = 0
+
+        if boardCorrect.sum() == 0:
+            return batchSz
+
+    return batchSz-boardCorrect.sum()
 
 if __name__=='__main__':
     main()
