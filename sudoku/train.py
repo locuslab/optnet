@@ -54,16 +54,20 @@ def main():
     convP = subparsers.add_parser('conv')
     convP.add_argument('--nHidden', type=int, default=50)
     convP.add_argument('--bn', action='store_true')
-    optnetP = subparsers.add_parser('optnet')
-    # optnetP.add_argument('--nHidden', type=int, default=50)
-    # optnetP.add_argument('--nineq', type=int, default=100)
-    optnetP.add_argument('--Qpenalty', type=float, default=0.1)
+    optnetEqP = subparsers.add_parser('optnetEq')
+    optnetEqP.add_argument('--Qpenalty', type=float, default=0.1)
+    optnetIneqP = subparsers.add_parser('optnetIneq')
+    optnetIneqP.add_argument('--Qpenalty', type=float, default=0.1)
+    optnetIneqP.add_argument('--nineq', type=int, default=100)
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     t = '{}.{}'.format(args.boardSz, args.model)
-    if args.model == 'optnet':
+    if args.model == 'optnetEq':
         t += '.Qpenalty={}'.format(args.Qpenalty)
+    elif args.model == 'optnetIneq':
+        t += '.Qpenalty={}'.format(args.Qpenalty)
+        t += '.nineq={}'.format(args.nineq)
     elif args.model == 'fc':
         t += '.nHidden:{}'.format(','.join([str(x) for x in args.nHidden]))
         if args.bn:
@@ -102,8 +106,10 @@ def main():
         # nHidden = 2*nFeatures-1
         nHidden = args.nHidden
         model = models.FC(nFeatures, nHidden, args.bn)
-    elif args.model == 'optnet':
-        model = models.OptNet(args.boardSz, args.Qpenalty, trueInit=False)
+    elif args.model == 'optnetEq':
+        model = models.OptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
+    elif args.model == 'optnetIneq':
+        model = models.OptNetIneq(args.boardSz, args.Qpenalty, args.nineq)
     else:
         assert(False)
 
@@ -122,7 +128,7 @@ def main():
     testF.flush()
 
 
-    if args.model == 'optnet':
+    if 'optnet' in args.model:
         # if args.tvInit: lr = 1e-4
         # elif args.learnD: lr = 1e-2
         # else: lr = 1e-3
@@ -131,14 +137,14 @@ def main():
         lr = 1e-3
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
-    writeParams(args, model, 'init')
+    # writeParams(args, model, 'init')
     test(args, 0, model, testF, testW, testX, testY)
     for epoch in range(1, args.nEpoch+1):
         # update_lr(optimizer, epoch)
         train(args, epoch, model, trainF, trainW, trainX, trainY, optimizer)
         test(args, epoch, model, testF, testW, testX, testY)
         torch.save(model, os.path.join(args.save, 'latest.pth'))
-        writeParams(args, model, 'latest')
+        # writeParams(args, model, 'latest')
         os.system('./plot.py "{}" &'.format(args.save))
 
 def writeParams(args, model, tag):
