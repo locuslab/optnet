@@ -22,5 +22,5 @@ for boardSz in (2,3):
         err = computeErr(preds)/nBoards
         # MSE is not an exact metric because a board might have multiple solutions.
         mse = (preds - solvedBoards.data).mean()
-        print('| {:15f} | {:15f} | {:15f} |'.format(Qpenalty, err, mse))
+        print('| {:15f} | {:15f} | {:15e} |'.format(Qpenalty, err, mse))
     print('\n\n')
