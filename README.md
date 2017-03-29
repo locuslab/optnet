@@ -49,13 +49,7 @@ for signal denoising and sudoku.
 
 ## Setup and Dependencies
 
-+ Python/numpy
-+ [PyTorch](https://pytorch.org)
-  + The code currently requires a source install from the master branch from
-    [our fork](https://github.com/locuslab/pytorch) for new batch triangular
-    factorization functions we have added.
-    We are currently working with the PyTorch team to get these new features
-    merged into Torch proper.
++ Python/numpy/[PyTorch](https://pytorch.org)
 + [qpth](https://github.com/locuslab/qpth):
   *Our fast QP solver for PyTorch released in conjunction with this paper.*
 + [bamos/block](https://github.com/bamos/block):
