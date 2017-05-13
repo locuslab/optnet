@@ -31,7 +31,7 @@ class Lenet(nn.Module):
                 h = self.h.unsqueeze(0).expand(nBatch, nCls)
                 A = self.A.unsqueeze(0).expand(nBatch, 1, nCls)
                 b = self.b.unsqueeze(0).expand(nBatch, 1)
-                x = QPFunction()(-x.double(), Q, G, h, A, b).float()
+                x = QPFunction()(Q, -x.double(), G, h, A, b).float()
                 x = x.log()
                 return x
             self.projF = projF
@@ -86,7 +86,7 @@ class LenetOptNet(nn.Module):
         h = z0.mm(self.G.t())+s0
         e = Variable(torch.Tensor())
         inputs = self.qp_o(x)
-        x = QPFunction()(inputs, Q, G, h, e, e)
+        x = QPFunction()(Q, inputs, G, h, e, e)
         x = x[:,:10]
 
         return F.log_softmax(x)
@@ -168,7 +168,7 @@ class OptNet(nn.Module):
         h = z0.mm(self.G.t())+s0
         e = Variable(torch.Tensor())
         inputs = x
-        x = QPFunction()(inputs.double(), Q.double(), G.double(), h.double(), e, e)
+        x = QPFunction()(Q.double(), inputs.double(), G.double(), h.double(), e, e)
         x = x.float()
         # x = x[:,:10].float()
 
@@ -207,7 +207,7 @@ class OptNetEq(nn.Module):
         A = self.A.unsqueeze(0).expand(nBatch, self.A.size(0), self.A.size(1))
         b = self.b.unsqueeze(0).expand(nBatch, self.b.size(0))
 
-        x = QPFunction(verbose=False)(p.double(), Q, G, h, A, b).float()
+        x = QPFunction(verbose=False)(Q, p.double(), G, h, A, b).float()
         x = self.fc2(x)
 
         return F.log_softmax(x)

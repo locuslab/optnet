@@ -125,7 +125,7 @@ class OptNetEq(nn.Module):
         p = -puzzles.view(nBatch,-1)
 
         return QPFunction(verbose=False)(
-            p.double(), self.Q, self.G, self.h, self.A, self.b
+            self.Q, p.double(), self.G, self.h, self.A, self.b
         ).float().view_as(puzzles)
 
 class OptNetIneq(nn.Module):
@@ -158,7 +158,7 @@ class OptNetIneq(nn.Module):
         e = Variable(torch.Tensor())
 
         return QPFunction(verbose=False)(
-            p.double(), self.Q, G, h, e, e
+            self.Q, p.double(), G, h, e, e
         ).float().view_as(puzzles)
 
 class OptNetLatent(nn.Module):
@@ -182,7 +182,7 @@ class OptNetLatent(nn.Module):
 
         h = self.G.mv(self.z)+self.s
         x = QPFunction(verbose=False)(
-            x, self.Q, self.G, h, e, e,
+            self.Q, x, self.G, h, e, e,
         )
 
         x = self.fc_out(x)
