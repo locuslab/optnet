@@ -53,6 +53,37 @@ class FC(nn.Module):
 
         return x
 
+class Conv(nn.Module):
+    def __init__(self, boardSz):
+        super().__init__()
+
+        self.boardSz = boardSz
+
+        convs = []
+        Nsq = boardSz**2
+        prevSz = Nsq
+        szs = [512]*10 + [Nsq]
+        for sz in szs:
+            conv = nn.Conv2d(prevSz, sz, kernel_size=3, padding=1)
+            convs.append(conv)
+            prevSz = sz
+
+        self.convs = nn.ModuleList(convs)
+
+    def __call__(self, x):
+        nBatch = x.size(0)
+        Nsq = x.size(1)
+
+        for i in range(len(self.convs)-1):
+            x = F.relu(self.convs[i](x))
+        x = self.convs[-1](x)
+
+        ex = x.exp()
+        exs = ex.sum(3).expand(nBatch, Nsq, Nsq, Nsq)
+        x = ex/exs
+
+        return x
+
 def get_sudoku_matrix(n):
     X = np.array([[cp.Variable(n**2) for i in range(n**2)] for j in range(n**2)])
     cons = ([x >= 0 for row in X for x in row] +
@@ -129,6 +160,35 @@ class OptNetIneq(nn.Module):
         return QPFunction(verbose=False)(
             p.double(), self.Q, G, h, e, e
         ).float().view_as(puzzles)
+
+class OptNetLatent(nn.Module):
+    def __init__(self, n, Qpenalty, nLatent, nineq, trueInit=False):
+        super().__init__()
+        nx = (n**2)**3
+        self.fc_in = nn.Linear(nx, nLatent)
+        self.Q = Variable(Qpenalty*torch.eye(nLatent).cuda())
+        self.G = Parameter(torch.Tensor(nineq, nLatent).uniform_(-1,1).cuda())
+        self.z = Parameter(torch.zeros(nLatent).cuda())
+        self.s = Parameter(torch.ones(nineq).cuda())
+        self.fc_out = nn.Linear(nLatent, nx)
+
+    def forward(self, puzzles):
+        nBatch = puzzles.size(0)
+
+        x = puzzles.view(nBatch,-1)
+        x = self.fc_in(x)
+
+        e = Variable(torch.Tensor())
+
+        h = self.G.mv(self.z)+self.s
+        x = QPFunction(verbose=False)(
+            x, self.Q, self.G, h, e, e,
+        )
+
+        x = self.fc_out(x)
+        x = x.view_as(puzzles)
+        return x
+
 
 # if __name__=="__main__":
 #     sudoku = SolveSudoku(2, 0.2)

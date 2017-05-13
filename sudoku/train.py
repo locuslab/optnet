@@ -59,6 +59,10 @@ def main():
     optnetIneqP = subparsers.add_parser('optnetIneq')
     optnetIneqP.add_argument('--Qpenalty', type=float, default=0.1)
     optnetIneqP.add_argument('--nineq', type=int, default=100)
+    optnetLatent = subparsers.add_parser('optnetLatent')
+    optnetLatent.add_argument('--Qpenalty', type=float, default=0.1)
+    optnetLatent.add_argument('--nLatent', type=int, default=100)
+    optnetLatent.add_argument('--nineq', type=int, default=100)
     args = parser.parse_args()
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
@@ -67,6 +71,10 @@ def main():
         t += '.Qpenalty={}'.format(args.Qpenalty)
     elif args.model == 'optnetIneq':
         t += '.Qpenalty={}'.format(args.Qpenalty)
+        t += '.nineq={}'.format(args.nineq)
+    elif args.model == 'optnetLatent':
+        t += '.Qpenalty={}'.format(args.Qpenalty)
+        t += '.nLatent={}'.format(args.nLatent)
         t += '.nineq={}'.format(args.nineq)
     elif args.model == 'fc':
         t += '.nHidden:{}'.format(','.join([str(x) for x in args.nHidden]))
@@ -103,13 +111,16 @@ def main():
 
     print_header('Building model')
     if args.model == 'fc':
-        # nHidden = 2*nFeatures-1
         nHidden = args.nHidden
         model = models.FC(nFeatures, nHidden, args.bn)
+    if args.model == 'conv':
+        model = models.Conv(args.boardSz)
     elif args.model == 'optnetEq':
         model = models.OptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
     elif args.model == 'optnetIneq':
         model = models.OptNetIneq(args.boardSz, args.Qpenalty, args.nineq)
+    elif args.model == 'optnetLatent':
+        model = models.OptNetLatent(args.boardSz, args.Qpenalty, args.nLatent, args.nineq)
     else:
         assert(False)
 
