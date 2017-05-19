@@ -54,6 +54,8 @@ def main():
     convP = subparsers.add_parser('conv')
     convP.add_argument('--nHidden', type=int, default=50)
     convP.add_argument('--bn', action='store_true')
+    spOptnetEqP = subparsers.add_parser('spOptnetEq')
+    spOptnetEqP.add_argument('--Qpenalty', type=float, default=0.1)
     optnetEqP = subparsers.add_parser('optnetEq')
     optnetEqP.add_argument('--Qpenalty', type=float, default=0.1)
     optnetIneqP = subparsers.add_parser('optnetIneq')
@@ -67,7 +69,7 @@ def main():
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     t = '{}.{}'.format(args.boardSz, args.model)
-    if args.model == 'optnetEq':
+    if args.model == 'optnetEq' or args.model == 'spOptnetEq':
         t += '.Qpenalty={}'.format(args.Qpenalty)
     elif args.model == 'optnetIneq':
         t += '.Qpenalty={}'.format(args.Qpenalty)
@@ -117,12 +119,14 @@ def main():
         model = models.Conv(args.boardSz)
     elif args.model == 'optnetEq':
         model = models.OptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
+    elif args.model == 'spOptnetEq':
+        model = models.SpOptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
     elif args.model == 'optnetIneq':
         model = models.OptNetIneq(args.boardSz, args.Qpenalty, args.nineq)
     elif args.model == 'optnetLatent':
         model = models.OptNetLatent(args.boardSz, args.Qpenalty, args.nLatent, args.nineq)
     else:
-        assert(False)
+        assert False
 
     if args.cuda:
         model = model.cuda()

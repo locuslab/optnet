@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from block import block
 
-from qpth.qp import QPFunction
+from qpth.qp import SpQPFunction, QPFunction
 
 import cvxpy as cp
 
@@ -122,11 +122,56 @@ class OptNetEq(nn.Module):
     def forward(self, puzzles):
         nBatch = puzzles.size(0)
 
-        p = -puzzles.view(nBatch,-1)
+        p = -puzzles.view(nBatch, -1)
 
-        return QPFunction(verbose=False)(
+        return QPFunction(verbose=-1)(
             self.Q, p.double(), self.G, self.h, self.A, self.b
         ).float().view_as(puzzles)
+
+
+class SpOptNetEq(nn.Module):
+    def __init__(self, n, Qpenalty, trueInit=False):
+        super().__init__()
+        nx = (n**2)**3
+        self.nx = nx
+
+        spTensor = torch.cuda.sparse.DoubleTensor
+        iTensor = torch.cuda.LongTensor
+        dTensor = torch.cuda.DoubleTensor
+
+        self.Qi = iTensor([range(nx), range(nx)])
+        self.Qv = Variable(dTensor(nx).fill_(Qpenalty))
+        self.Qsz = torch.Size([nx, nx])
+
+        self.Gi = iTensor([range(nx), range(nx)])
+        self.Gv = Variable(dTensor(nx).fill_(-1.0))
+        self.Gsz = torch.Size([nx, nx])
+        self.h = Variable(torch.zeros(nx).double().cuda())
+
+        assert not trueInit
+        t = get_sudoku_matrix(n)
+        neq = t.shape[0]
+        self.Ai = torch.stack((iTensor(list(range(neq))).unsqueeze(1).repeat(1, nx).view(-1),
+                               iTensor(list(range(nx))).repeat(neq)))
+        self.Av = Parameter(dTensor(neq*nx).uniform_())
+        self.Asz = torch.Size([neq, nx])
+        self.b = Variable(torch.ones(neq).double().cuda())
+
+    def forward(self, puzzles):
+        nBatch = puzzles.size(0)
+
+        p = -puzzles.view(nBatch,-1).double()
+
+        return SpQPFunction(
+            self.Qi, self.Qsz, self.Gi, self.Gsz, self.Ai, self.Asz, verbose=-1)(
+                self.Qv.expand(nBatch, self.Qv.size(0)),
+                p,
+                self.Gv.expand(nBatch, self.Gv.size(0)),
+                self.h.expand(nBatch, self.h.size(0)),
+                self.Av.expand(nBatch, self.Av.size(0)),
+                self.b.expand(nBatch, self.b.size(0))
+        ).float().view_as(puzzles)
+
 
 class OptNetIneq(nn.Module):
     def __init__(self, n, Qpenalty, nineq):
