@@ -112,10 +112,10 @@ class OptNetEq(nn.Module):
         self.Q = Variable(Qpenalty*torch.eye(nx).double().cuda())
         self.G = Variable(-torch.eye(nx).double().cuda())
         self.h = Variable(torch.zeros(nx).double().cuda())
+        t = get_sudoku_matrix(n)
         if trueInit:
-            self.A = Parameter(torch.DoubleTensor(get_sudoku_matrix(n)).cuda())
+            self.A = Parameter(torch.DoubleTensor(t).cuda())
         else:
-            t = get_sudoku_matrix(n)
             self.A = Parameter(torch.rand(t.shape).double().cuda())
         self.b = Variable(torch.ones(self.A.size(0)).double().cuda())
 
@@ -148,13 +148,21 @@ class SpOptNetEq(nn.Module):
         self.Gsz = torch.Size([nx, nx])
         self.h = Variable(torch.zeros(nx).double().cuda())
 
-        assert not trueInit
         t = get_sudoku_matrix(n)
         neq = t.shape[0]
-        self.Ai = torch.stack((iTensor(list(range(neq))).unsqueeze(1).repeat(1, nx).view(-1),
-                               iTensor(list(range(nx))).repeat(neq)))
-        self.Av = Parameter(dTensor(neq*nx).uniform_())
-        self.Asz = torch.Size([neq, nx])
+        if trueInit:
+            I = t != 0
+            self.Av = Parameter(dTensor(t[I]))
+            Ai_np = np.nonzero(t)
+            self.Ai = torch.stack((torch.LongTensor(Ai_np[0]),
+                                   torch.LongTensor(Ai_np[1]))).cuda()
+            self.Asz = torch.Size([neq, nx])
+        else:
+            # TODO: This is very dense:
+            self.Ai = torch.stack((iTensor(list(range(neq))).unsqueeze(1).repeat(1, nx).view(-1),
+                                iTensor(list(range(nx))).repeat(neq)))
+            self.Av = Parameter(dTensor(neq*nx).uniform_())
+            self.Asz = torch.Size([neq, nx])
         self.b = Variable(torch.ones(neq).double().cuda())
 
     def forward(self, puzzles):
