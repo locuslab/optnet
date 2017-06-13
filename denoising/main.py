@@ -43,6 +43,7 @@ def main():
     parser.add_argument('--testBatchSz', type=int, default=100)
     parser.add_argument('--nEpoch', type=int, default=100)
     parser.add_argument('--testPct', type=float, default=0.1)
+    parser.add_argument('--work', type=str, default='work')
     parser.add_argument('--save', type=str)
     subparsers = parser.add_subparsers(dest='model')
     subparsers.required = True
@@ -61,7 +62,7 @@ def main():
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     # args.save = args.save or 'work/{}.{}'.format(args.dataset, args.model)
     if args.save is None:
-        t = 'work/{}'.format(args.model)
+        t = os.path.join(args.work, args.model)
         if args.model == 'optnet':
             t += '.eps={}'.format(args.eps)
             if args.tvInit:

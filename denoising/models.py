@@ -150,7 +150,7 @@ class OptNet_LearnD(nn.Module):
         h = self.h.unsqueeze(0).expand(nBatch, self.nineq)
         e = Variable(torch.Tensor())
         # p = torch.cat((-x, self.lam.unsqueeze(0).expand(nBatch, self.nFeatures-1)), 1)
-        p = torch.cat((-x, Parameter(20.*torch.ones(nBatch, self.nFeatures-1).cuda())), 1)
+        p = torch.cat((-x, Parameter(13.*torch.ones(nBatch, self.nFeatures-1).cuda())), 1)
         x = QPFunction()(Q.double(), p.double(), G.double(), h.double(), e, e).float()
         x = x[:,:self.nFeatures]
 
