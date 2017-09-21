@@ -3,18 +3,22 @@
 This repository is by [Brandon Amos](http://bamos.github.io)
 and [J. Zico Kolter](http://zicokolter.com)
 and contains the [PyTorch](https://pytorch.org) source code to
-reproduce the experiments in our paper
+reproduce the experiments in our ICML 2017 paper
 [OptNet: Differentiable Optimization as a Layer in Neural Networks](https://arxiv.org/abs/1703.00443).
 
 If you find this repository helpful in your publications,
 please consider citing our paper.
 
 ```
-@article{amos2017optnet,
-  title={OptNet: Differentiable Optimization as a Layer in Neural Networks},
-  author={Brandon Amos and J. Zico Kolter},
-  journal={arXiv preprint arXiv:1703.00443},
-  year={2017}
+@InProceedings{amos2017optnet,
+  title = {{O}pt{N}et: Differentiable Optimization as a Layer in Neural Networks},
+  author = {Brandon Amos and J. Zico Kolter},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning},
+  pages = {136--145},
+  year = {2017},
+  volume = {70},
+  series = {Proceedings of Machine Learning Research},
+  publisher ={PMLR},
 }
 ```
 
