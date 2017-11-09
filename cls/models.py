@@ -5,7 +5,7 @@ from torch.autograd import Function, Variable
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 
-from qpth.qp import QPFunction
+from qpth.qp import QPFunction, QPSolvers
 
 class Lenet(nn.Module):
     def __init__(self, nHidden, nCls=10, proj='softmax'):
@@ -133,15 +133,15 @@ class OptNet(nn.Module):
         self.fc1 = nn.Linear(nFeatures, nHidden)
         self.fc2 = nn.Linear(nHidden, nCls)
 
-        self.qp_z0 = nn.Linear(nCls, nCls)
-        self.qp_s0 = nn.Linear(nCls, nineq)
+        # self.qp_z0 = nn.Linear(nCls, nCls)
+        # self.qp_s0 = nn.Linear(nCls, nineq)
 
         assert(neq==0)
         self.M = Variable(torch.tril(torch.ones(nCls, nCls)).cuda())
         self.L = Parameter(torch.tril(torch.rand(nCls, nCls).cuda()))
         self.G = Parameter(torch.Tensor(nineq,nCls).uniform_(-1,1).cuda())
-        # self.z0 = Parameter(torch.zeros(nCls).cuda())
-        # self.s0 = Parameter(torch.ones(nineq).cuda())
+        self.z0 = Parameter(torch.zeros(nCls).cuda())
+        self.s0 = Parameter(torch.ones(nineq).cuda())
 
         self.nineq = nineq
         self.neq = neq
@@ -163,12 +163,15 @@ class OptNet(nn.Module):
         Q = L.mm(L.t()) + self.eps*Variable(torch.eye(self.nCls)).cuda()
         Q = Q.unsqueeze(0).expand(nBatch, self.nCls, self.nCls)
         G = self.G.unsqueeze(0).expand(nBatch, self.nineq, self.nCls)
-        z0 = self.qp_z0(x)
-        s0 = self.qp_s0(x)
+        # z0 = self.qp_z0(x)
+        # s0 = self.qp_s0(x)
+        z0 = self.z0.unsqueeze(0).expand(nBatch, self.nCls)
+        s0 = self.s0.unsqueeze(0).expand(nBatch, self.nineq)
         h = z0.mm(self.G.t())+s0
         e = Variable(torch.Tensor())
         inputs = x
-        x = QPFunction()(Q.double(), inputs.double(), G.double(), h.double(), e, e)
+        x = QPFunction(verbose=-1)(
+            Q.double(), inputs.double(), G.double(), h.double(), e, e)
         x = x.float()
         # x = x[:,:10].float()
 
