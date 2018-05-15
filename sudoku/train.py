@@ -115,7 +115,7 @@ def main():
     if args.model == 'fc':
         nHidden = args.nHidden
         model = models.FC(nFeatures, nHidden, args.bn)
-    if args.model == 'conv':
+    elif args.model == 'conv':
         model = models.Conv(args.boardSz)
     elif args.model == 'optnetEq':
         model = models.OptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
