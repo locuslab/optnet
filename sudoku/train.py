@@ -18,6 +18,7 @@ import numpy as np
 import numpy.random as npr
 
 import sys
+import time
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -46,6 +47,8 @@ def main():
     parser.add_argument('--testPct', type=float, default=0.1)
     parser.add_argument('--save', type=str)
     parser.add_argument('--work', type=str, default='work')
+    parser.add_argument('--qp-solver', type=str, default='qpth',
+                        choices=['qpth', 'osqpth'])
     subparsers = parser.add_subparsers(dest='model')
     subparsers.required = True
     fcP = subparsers.add_parser('fc')
@@ -118,7 +121,9 @@ def main():
     elif args.model == 'conv':
         model = models.Conv(args.boardSz)
     elif args.model == 'optnetEq':
-        model = models.OptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
+        model = models.OptNetEq(
+            n=args.boardSz, Qpenalty=args.Qpenalty, qp_solver=args.qp_solver,
+            trueInit=False)
     elif args.model == 'spOptnetEq':
         model = models.SpOptNetEq(args.boardSz, args.Qpenalty, trueInit=False)
     elif args.model == 'optnetIneq':
@@ -153,7 +158,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # writeParams(args, model, 'init')
-    test(args, 0, model, testF, testW, testX, testY)
+    # test(args, 0, model, testF, testW, testX, testY)
     for epoch in range(1, args.nEpoch+1):
         # update_lr(optimizer, epoch)
         train(args, epoch, model, trainF, trainW, trainX, trainY, optimizer)
@@ -167,6 +172,7 @@ def writeParams(args, model, tag):
         A = model.A.data.cpu().numpy()
         np.savetxt(os.path.join(args.save, 'A.{}'.format(tag)), A)
 
+# @profile
 def train(args, epoch, model, trainF, trainW, trainX, trainY, optimizer):
     batchSz = args.batchSz
 
@@ -178,6 +184,7 @@ def train(args, epoch, model, trainF, trainW, trainX, trainY, optimizer):
     batch_data = Variable(batch_data_t, requires_grad=False)
     batch_targets = Variable(batch_targets_t, requires_grad=False)
     for i in range(0, trainX.size(0), batchSz):
+        start = time.time()
         batch_data.data[:] = trainX[i:i+batchSz]
         batch_targets.data[:] = trainY[i:i+batchSz]
         # Fixed batch size for debugging:
@@ -191,12 +198,13 @@ def train(args, epoch, model, trainF, trainW, trainX, trainY, optimizer):
         optimizer.step()
 
         err = computeErr(preds.data)/batchSz
-        print('Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.4f} Err: {:.4f}'.format(
+        print('Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.4f} Err: {:.4f} Time: {:.2f}s'.format(
             epoch, i+batchSz, trainX.size(0),
             float(i+batchSz)/trainX.size(0)*100,
-            loss.data[0], err))
+            loss.item(), err, time.time()-start))
 
-        trainW.writerow((epoch-1+float(i+batchSz)/trainX.size(0), loss.data[0], err))
+        trainW.writerow(
+            (epoch-1+float(i+batchSz)/trainX.size(0), loss.item(), err))
         trainF.flush()
 
 def test(args, epoch, model, testF, testW, testX, testY):
@@ -221,7 +229,7 @@ def test(args, epoch, model, testF, testW, testX, testY):
         nErr += computeErr(output.data)
 
     nBatches = testX.size(0)/batchSz
-    test_loss = test_loss.data[0]/nBatches
+    test_loss = test_loss.item()/nBatches
     test_err = nErr/testX.size(0)
     print('TEST SET RESULTS:' + ' ' * 20)
     print('Average loss: {:.4f}'.format(test_loss))
@@ -241,7 +249,7 @@ def computeErr(pred):
         valid = (x.min(1)[0] == 0)
         valid *= (x.max(1)[0] == nsq-1)
         valid *= (x.sum(1) == s)
-        return 1-valid
+        return ~valid
 
     boardCorrect = torch.ones(batchSz).type_as(pred)
     for j in range(nsq):
@@ -257,7 +265,7 @@ def computeErr(pred):
         if boardCorrect.sum() == 0:
             return batchSz
 
-    return batchSz-boardCorrect.sum()
+    return batchSz-boardCorrect.sum().item()
 
 if __name__=='__main__':
     main()

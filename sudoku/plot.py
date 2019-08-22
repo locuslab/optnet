@@ -16,6 +16,11 @@ import json
 import glob
 
 def main():
+    # import sys
+    # from IPython.core import ultratb
+    # sys.excepthook = ultratb.FormattedTB(mode='Verbose',
+    #     color_scheme='Linux', call_pdb=1)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('workDir', type=str)
     args = parser.parse_args()
@@ -61,7 +66,8 @@ def plotLoss(trainDf, testDf, workDir):
     plt.grid(b=True, which='major', color='k', linestyle='-')
     plt.grid(b=True, which='minor', color='k', linestyle='--', alpha=0.2)
     plt.legend()
-    ax.set_yscale('log')
+    # ax.set_yscale('log')
+    ax.set_ylim(0, None)
     for ext in ['pdf', 'png']:
         f = os.path.join(workDir, "loss."+ext)
         fig.savefig(f)
@@ -87,7 +93,8 @@ def plotErr(trainDf, testDf, workDir):
     plt.grid(b=True, which='major', color='k', linestyle='-')
     plt.grid(b=True, which='minor', color='k', linestyle='--', alpha=0.2)
     plt.legend()
-    ax.set_yscale('log')
+    # ax.set_yscale('log')
+    ax.set_ylim(0, None)
     for ext in ['pdf', 'png']:
         f = os.path.join(workDir, "err."+ext)
         fig.savefig(f)
