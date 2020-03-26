@@ -55,8 +55,8 @@ def plotLoss(trainDf, testDf, workDir):
     trainLoss = trainDf['loss'].values
 
     N = np.argmax(trainEpoch==1.0)
-    trainEpoch = trainEpoch[N:]
-    trainLoss = [sum(trainLoss[i-N:i])/N for i in range(N, len(trainLoss))]
+    trainEpoch = trainEpoch[N-1:]
+    trainLoss = np.convolve(trainLoss, np.full(N, 1./N), mode='valid')
     plt.plot(trainEpoch, trainLoss, label='Train')
     if not testDf.empty:
         plt.plot(testDf['epoch'].values, testDf['loss'].values, label='Test')
@@ -82,8 +82,8 @@ def plotErr(trainDf, testDf, workDir):
     trainLoss = trainDf['err'].values
 
     N = np.argmax(trainEpoch==1.0)
-    trainEpoch = trainEpoch[N:]
-    trainLoss = [sum(trainLoss[i-N:i])/N for i in range(N, len(trainLoss))]
+    trainEpoch = trainEpoch[N-1:]
+    trainLoss = np.convolve(trainLoss, np.full(N, 1./N), mode='valid')
     plt.plot(trainEpoch, trainLoss, label='Train')
     if not testDf.empty:
         plt.plot(testDf['epoch'].values, testDf['err'].values, label='Test')
